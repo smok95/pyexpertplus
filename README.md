@@ -2,6 +2,29 @@ pyexpertplus 사용을 위한 기본 필수사항
 - 파이썬3 32비트 버전
 - pywin32
 
-*주의, 현재 단순 테스트 목적으로 작성된 소스가 전부이며, 아무 내용이 없는 상태로 봐도 무방합니다.
-해당 소스를 실행하시면
-현재 계좌목록 출력 후 삼성전자(005930) 실시간 시세가 출력됩니다.
+```python
+import pyexpertplus as ep
+
+# 실시간 데이터 수신 이벤트 
+class RealEvent:    
+    def OnReceiveData(self, trCode, value, msgCode, msgName):        
+        print("OnReceiveData: trCode={}, value={}, msgCode={}, msgName={}".format(trCode, value, msgCode, msgName))
+
+
+def main():
+    # ExpertPlus 초기화
+    if ep.initialize()== False:
+        return
+
+    # 실시간 조회 객체 생성
+    real = ep.YFReal(RealEvent)
+
+    # 실시간 조회
+    real.AddRealCode("000660", "RQ1101")
+
+    # 프로그램 종료 방지 루프
+    ep.loop()
+
+
+main()
+```
