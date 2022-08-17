@@ -2,8 +2,6 @@ from ast import While
 from logging import error, log
 import string
 import win32com.client as com
-import timer
-import threading
 import pythoncom
 import time
 import win32api
@@ -20,9 +18,17 @@ def wait(msec):
             break
 
 ###############################################################################
-def initialize() -> bool:
-    """
-    KB증권 ExpertPlus 초기화
+def initialize(waitingTime=5000) -> bool:
+    """KB증권 ExpertPlus 초기화
+
+    Args:
+        waitingTime (int, optional): 마스터초기화 대기시간. Defaults to 5000.
+
+    Raises:
+        err: _description_
+
+    Returns:
+        bool: 성공시 True
     """
     # 관리자권한 여부 확인
     if not ctypes.windll.shell32.IsUserAnAdmin():
@@ -42,8 +48,8 @@ def initialize() -> bool:
         else:
             raise err
     
-    # 마스터 초기화를 위해 약 5초간 대기
-    wait(3000)
+    # 마스터 초기화를 위해 대기
+    wait(waitingTime)
 
 
     if realObj:
@@ -174,22 +180,100 @@ class YFReal:
     def GetElwStrCode(self, code):
         return self.comObj.GetElwStrCode(code)
 
+################################################################################
+class YFValues:
+    def __init__(self):        
+        self.comObj = com.Dispatch("YFExpertPlus.YFValues")
+        self.Delimiter = self.comObj.Delimiter
+        self.Data = self.comObj.Data
+
+    def SetValueData(self, header, data):
+        """수신된 단일 데이터를 해당 객체에 입력하는 함수
+        YFRequestData 객체의 ReceiveData Event에서 해당 객체를 처리한다.
+        ReceiveData Event에서 Value로 넘어온 데이터를 처리하는데 사용된다.  
+
+        Args:
+            header (Variant): 헤더정보
+            data (Variant): 데이터            
+        """
+        self.comObj.SetValueData(header, data)
+
+    def GetColCount(self):
+        """해당 객체의 Col 개수
+
+        Returns:
+            integer: 해당 객체의 Col 개수
+        """
+        return self.comObj.GetColCount()
+    
+    def GetValue(self, index):
+        """해당 컬럼의 값을 리턴
+
+        Args:
+            index (integer): 컬럼 index 0부터 시작
+        """
+        return self.comObj.GetValue(index)
+
+    def SetValue(self, index, value):
+        """해당 컬럼에 값을 변경
+
+        Args:
+            index (integer): 컬럼 index (0부터 시작)
+            value (any): 변경할 값
+        """
+        self.comObj.SetValue(index, value)
+    
+    def GetNameValue(self, name):
+        """해당 필드명에 위치한 값 리턴
+
+        Args:
+            name (string): 컬럼 명
+
+        Returns:
+            any : 해당 필드명에 위치한 값
+        """
+        return self.comObj.GetNameValue(name)
+    
+    def SetNameValue(self, name, value):
+        """해당 컬럼명에 값 입력
+
+        Args:
+            name (string): 컬럼명
+            value (any): 변경할 컬럼 값
+        """
+        self.comObj.SetNameValue(name, value)
+
+
+
+    
+
+################################################################################
 def unloop():
     global g_stopLoop
     g_stopLoop = True
 
-def loop():
+def loop(callback=None, userdata=None):
+    """메시지 펌프
+
+    Args:
+        callback (function, optional): loop이벤트 콜백. Defaults to None.
+        userdata (any, optional): userdata. Defaults to None.
+    """
     global g_stopLoop
     g_stopLoop = False
     while not g_stopLoop:
         pythoncom.PumpWaitingMessages()
-        time.sleep(0.00001)
+        if callback == None:
+            time.sleep(0.00001)
+        else:
+            callback(userdata)
 
 
 
 def test():   
     real = YFReal(YFRealEvent)
     real.AddRealCode("000660", "RQ1101")
+    real.AddRealCode("005930", "RQ1101")
     loop()
 
 
