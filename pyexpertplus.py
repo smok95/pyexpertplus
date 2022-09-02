@@ -189,6 +189,8 @@ class YFRequestDataEvent:
     def OnStatus(self, status, trCode, msgCode, msgName):
         """송수신시 에러가 발생한 경우 발생되는 Event
 
+            YFGRequest의 경우 RequestAliveInfo 등록시
+            msgCode = 9002(해외선물 서버연결), 9003(야간옵션,선물 서버연결) 실시간으로 서버연결 확인 가능
         Args:
             status (string): 메시지상태코드(0 : 정상, 1:송신에러, 2:수신에러)
             trCode (string): 요청한 trCode
@@ -552,6 +554,137 @@ class YFValues:
 
 
 
+################################################################################
+# Global 조회
+class YFGRequest:
+    def __init__(self, requestDataEventClass=None):
+        PROG_ID = "YFGExpertPlus.YFGRequest"
+        if requestDataEventClass==None:
+            self.comObj = com.Dispatch(PROG_ID)
+        else:
+            self.comObj = com.DispatchWithEvents(PROG_ID, requestDataEventClass)
+    
+    def GlobalInit(self):
+        """COM DLL 초기화 함수(반드시 처음 화면 로딩시 호출 필요)
+        """
+        self.comObj.GlobalInit()
+    
+    def RequestInit(self):
+        """서버로 데이터 요청시 전송하는 데이터 Format초기화하는 함수이며 데이터 요청시 반드시 호출
+        """
+        self.comObj.RequestInit()
+    
+    def SetData(self, name, value):
+        """서버 전송시 필요한 데이터를 입력할 때 사용
+
+        Args:
+            name (any): 정의된 필드명 (제공문서참조)
+            value (any): 정의된 필드에 대한 값
+
+            Ex) SetData("Code", "6AM13")
+        """
+        self.comObj.SetData(name, value)
+
+    def RequestData(self, trCode, nextFlag=0) -> bool:
+        """서버로 입력한 데이터 전송
+
+        Args:
+            trCode (any): 요청 TrCode
+            nextFlag (int): 디폴트:0 다음데이터가 존재하면 nextFlag:1
+
+            Ex) 데이터 요청시 예
+            RequestInit <- 전송초기화
+            SetData("Code", "6AM13") <- 데이터 요청시 필요한 데이터
+            RequestData("GQ9001", 0) <- 서버로 데이터 요청
+
+        Returns:
+            bool: 
+        """
+        return self.comObj.RequestData(trCode, nextFlag)
+    
+    def GetData(self, name) -> any:
+        """서버 전송시 입력된 데이터를 필드명으로 가져오기
+
+        Args:
+            name (any): 정의된 필드명 (제공문서참조)
+
+        Returns:
+            any: 
+        """
+        return self.comObj.GetData(name)
+    
+    def GetCommInfo(self) -> any:
+        """통신 접속 정보
+
+        Returns:
+            any: 
+        """
+        return self.comObj.GetcommInfo()
+
+    def GetAccountNo(self) -> any:
+        """계좌번호 전체를 문자열로 가져오기
+
+        Returns:
+            any: 
+        """
+        return self.comObj.GetAccountNo()
+    
+    def AccountCount(self) -> int:
+        """보유한 계좌 개수
+
+        Returns:
+            int: 
+        """
+        return self.comObj.AccountCount()
+    
+    def AccountItem(self, index) -> any:
+        """인덱스로 계좌번호 가져오기
+
+        Args:
+            index (int): 0부터 시작
+
+        Returns:
+            any: 
+        """
+        self.comObj.AccountItem(index)
+    
+    def AllFormatExcel(self):
+        """서버 송수신 Format을 Excel로 출력
+        """
+        self.comObj.AllFormatExcel()
+    
+    def GetKorValueHeader(self, trCode) -> any:
+        return self.comObj.GetKorValueHeader(trCode)
+    
+    def GetValueHeader(self, trCode) -> any:
+        return self.comObj.GetValueHeader(trCode)
+    
+    def GetKorValueListHeader(self, trCode) -> any:
+        return self.comObj.GetKorValueListHeader(trCode)
+    
+    def GetValueListHeader(self, trCode) -> string:
+        return self.comObj.GetValueListHeader(trCode)
+    
+    def GetAllCodeName(self, code) -> any:
+        return self.comObj.GetAllCodeName(code)
+    
+    def GetAccountType(self, accountType) -> any:
+        return self.comObj.GetAccountType(accountType)
+    
+    def GetGFormatValue(self, aType, aValue) -> string:
+        return self.comObj.GetGFormatValue(aType, aValue)
+    
+    def RequestAliveInfo(self, aType):
+        self.comObj.RequestAliveInfo(aType)
+    
+    def GetHogaData(self, code, sValue) -> any:
+        return self.comObj.GetHogaData(code, sValue)
+    
+    def RequestCommClose(self):
+        self.comObj.RequestCommClose()
+    
+    def GetExCodeToExName(self, exCode)-> any:
+        return self.comObj.GetExCodeToExName(exCode)
     
 
 ################################################################################
