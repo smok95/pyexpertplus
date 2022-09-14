@@ -1,5 +1,5 @@
 from ast import While
-from fileinput import nextfile
+from fileinput import filename, nextfile
 from logging import error, log
 import string
 import win32com.client as com
@@ -552,7 +552,115 @@ class YFValues:
         """
         self.comObj.SetNameValue(name, value)
 
+################################################################################
+# YFValueList 이벤트
+class YFValueListEvent:
+    def OnUpdate(self, recNo):
+        """테이블에서 입력한 데이터 처리가 완료되면 발생
 
+        Args:
+            recNo (int): 수정시 레코드 번호
+                -1: 처음 리스트 입력시
+                0이상 : 리스트에서 변경이 생기는 경우 변경 위치 번호        
+        """
+        print("OnUpdate: recNo={}".format(recNo))
+
+################################################################################
+# 리스트데이터
+class YFValueList:
+    def __init__(self, valueListEventClass=None):
+        PROG_ID = "YFExpertPlus.YFValueList"
+        if valueListEventClass==None:
+            self.comObj = com.Dispatch(PROG_ID)
+        else:
+            self.comObj = com.DispatchWithEvents(PROG_ID, valueListEventClass)
+    
+    def SetListData(self, header, data, append):
+        self.comObj.SetListData(header, data, append)
+    
+    def ColCount(self) -> int:
+        return self.comObj.ColCount()
+    
+    def RowCount(self) -> int:
+        return self.comObj.RowCount()
+    
+    def RowFirst(self):
+        self.comObj.RowFirst()
+
+    def RowLast(self):
+        self.comObj.RowLast()
+
+    def RowNext(self):
+        self.comObj.RowNext()
+
+    def RowPrior(self):
+        self.comObj.RowPrior()
+
+    def RowEof(self):
+        self.comObj.RowEof()
+
+    def FindCol(self, name) -> any:
+        return self.comObj.FindCol(name)
+    
+    def RecNo(self) -> int:
+        return self.comObj.RecNo()
+    
+    def GetColBool(self, index) -> bool:
+        return self.comObj.GetColBool(index)
+    
+    def GetColFloat(self, index) -> float:
+        return self.comObj.GetColFloat(index)
+    
+    def GetColInt(self, index) -> int:
+        return self.comObj.GetColInt(index)
+    
+    def GetColString(self, index) -> string:
+        return self.comObj.GetColString(index)
+    
+    def GetColValue(self, index) -> any:
+        return self.comObj.GetColValue(index)
+    
+    def GetColName(self, index) -> string:
+        return self.comObj.GetColName(index)
+    
+    def GetDataCell(self, colIdx, rowIdx) -> any:
+        return self.comObj.GetDataCell(colIdx, rowIdx)
+    
+    def GetRowDataCell(self, colIdx) -> any:
+        return self.comObj.GetRowDataCell(colIdx)
+    
+    def OutPutData(self, nameType) -> string:
+        return self.comObj.OutPutData(nameType)
+    
+    def GetPosData(self, name, value) -> bool:
+        return self.comObj.GetPosData(name, value)
+    
+    def SetColName(self, index, value):
+        self.comObj.SetColName(index, value)
+    
+    def SetListField(self, header):
+        self.comObj.SetListField(header)
+    
+    def ClearField(self):
+        self.comObj.ClearField()
+    
+    def SetFieldCreate(self, fieldName, fieldType, fieldSize):
+        self.comObj.SetFieldCreate(fieldName, fieldType, fieldSize)
+    
+    def FindRow(self, fieldNames, fieldValues) -> bool:
+        return self.comObj.FindRow(fieldNames, fieldValues)
+    
+    def SetInsetData(self, name, value) -> bool:
+        return self.comObj.SetInsetData(name, value)
+    
+    def SetUpdateData(self, keyName, keyValue, fieldName, fieldValue) -> bool:
+        return self.comObj.SetUpdateData(keyName, keyValue, fieldName, fieldValue)
+    
+    def SetSort(self, name, option)-> bool:
+        return self.comObj.SetSort(name, option)
+    
+    def GetExcel(self, fileName):
+        self.comObj.GetExcel(fileName)
 
 ################################################################################
 # Global 조회

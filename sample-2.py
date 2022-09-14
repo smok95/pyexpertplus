@@ -18,6 +18,26 @@ class RequestDataEvent:
         print("출금가능금액:" + str(int(values.GetNameValue("출금가능금액"))))
         print("손익금액:" + str(int(values.GetNameValue("손익금액합계"))))
 
+        valuelist = ep.YFValueList()
+        valuelist.SetListData(self.GetKorValueListHeader(trCode), valueList, selectCount-1)
+        
+        # 헤더 출력
+        header = ""
+        for i in range(valuelist.ColCount()):
+            header += valuelist.GetColName(i) + "\t"
+
+        print(header)
+
+        # 값 출력
+        valuelist.RowFirst()
+        for row in range(valuelist.RowCount()):
+            rowVal = ""
+            for col in range(valuelist.ColCount()):
+                rowVal += str(valuelist.GetRowDataCell(col)) + "\t"
+            
+            print(rowVal)
+            valuelist.RowNext()
+
 
 def main():
     # ExpertPlus 초기화
